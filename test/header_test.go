@@ -1,10 +1,20 @@
-package machzed
+package z_test
 
-import "testing"
+import (
+	"os"
+	"testing"
+
+	"github.com/fuwjax/machzed/internal/z"
+)
 
 func TestFirst(t *testing.T) {
-	got := true
-	if !got {
-		t.Errorf("Abs(-1) = %v; want 1", got)
+	header := z.Header{}
+	file, err := os.Open("data/czech.z5")
+	if err != nil {
+		t.Errorf("could not open file")
+	}
+	header.Read(file)
+	if header.Version != 5 {
+		t.Errorf("Unexpected version %v", header.Version)
 	}
 }
