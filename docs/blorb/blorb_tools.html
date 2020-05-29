@@ -1,0 +1,393 @@
+<HTML>
+<HEAD><TITLE>The Blorb Resources Format</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#EEEEEE">
+<BR><H3 align=center><I>The Blorb Resources Format</I></H3>
+
+<BR><A HREF="#one">1. What is Blorb?</A>
+<BR><A HREF="#two">2. Why is it called "Blorb"?</A>
+<BR><A HREF="#three">3. What programs currently support Blorb?</A>
+<BR><A HREF="#four">4. How does perlBlorb work?</A>
+<BR><A HREF="#five">5. Show me an example.</A>
+<BR><A HREF="#six">6. What if I want to
+give my pictures and sounds my own numbers?</A>
+<BR><A HREF="#seven">7. What's the full
+specification for the "blurb" language?</A>
+<BR><A HREF="#eight">8. Download perlBlorb.</A>
+<BR><A HREF="#nine">9. Download
+<I>The Spy Who Came In From The Garden</I>.</A>
+<HR>
+
+NEWS (30.1.98): 1. Andrew has now written Blorblib 1.0, a suite
+of C code for Blorb file handling.
+<P>
+2. perlBlorb now updated to 1.03, correcting the misspelling of
+the IFhd chunk, and generally tidied up (with better error
+messages, for instance).  One of the <I>The Spy...</I> blorb
+files is also updated, to spell IFhd correctly, and so is
+scanBlorb, ditto.
+<P>
+(29.1.98): 1. Andrew Plotkin has created a page formally
+specifying
+<a href="http://www.eblong.com/zarf/blorb/">Blorb: A Z-Machine
+Resource Collection Format Standard</a>,
+and is working on some generic C code to unload Blorb files, which
+may prove useful to interpreter-writers.
+<P>
+2. Jason Penney also has a 
+<a href="http://www.jczorkmid.net/V6Lib/oldindex.html">Blorb
+page</A>, containing Blorb files for the four
+graphical Infocom games (Zork Zero, Journey, Shogun and Arthur).
+<P>
+3. perlBlorb 1.02 now fixes a misunderstanding about the inclusion
+of AIFF chunks, with Blorb files for <I>The Spy...</I> recreated
+accordingly, and also works on Windows/DOS machines, whose Perl
+implementations distinguish binary from text files.
+<P>
+4. scanBlorb, a minimal Blorb-file scanner, has been added below.
+It's probably useful only for testing purposes.
+<HR>
+<A name="one"><H4>1. What is Blorb?</H4>
+<P>
+  Z-code story files have the ability to give instructions (to the
+interpreters playing them) that pictures should be displayed, or
+that sound effects should be played, but cannot themselves contain
+the pictures or sounds needed.  Instead, they refer to them only
+by number.  Pictures are given numbers of 1 and above (not
+necessarily contiguously), sounds are given numbers of 3 and above.
+<P>
+
+  Infocom's method of supplying pictures and sounds to go with a
+given story file is not at all convenient for authors today, and
+cannot cope with advances in computer graphics since the late 1980s.
+Thus a new method is needed.
+<P>
+
+  "Blorb" is a format, devised by Andrew Plotkin, which embeds all
+needed resources for a given story into one single "blorb file".
+Indeed, it can even (optionally) include the story file itself, so
+that one single file can contain all the Z-code, pictures and sound
+needed to enjoy the game.  The format was debated and agreed after
+some debate on the Z-machine mailing list.  The most significant
+decisions are that pictures are stored in PNG format and sounds in
+AIFF format (for samples) or, roughly speaking, SoundTracker files
+(for music).
+<P>
+
+  The Blorb format contains a number of features for fine tuning,
+and thus appears to be more complex than it really is.  The full
+specification (latest version 1.0, 24 January 1998) can be found
+at
+<A href="http://mirror.ifarchive.org/if-archive/infocom/interpreters/specification/">
+ftp://ftp.gmd.de/if-archive/infocom/interpreters/specification</A>
+or from Andrew's URL above.
+<HR>
+
+<A name="two"><H4>2. Why is it called "Blorb"?</H4>
+<P>
+
+  "Blorb" was the name of a spell in Infocom's game <I>Enchanter</I>
+whose purpose was to bind objects up into magical boxes.
+<HR>
+<A name="three"><H4>3. What programs currently support Blorb?</H4>
+<P>
+
+  The format is new and at present no interpreters can play Blorb
+files, though pressure is building.
+<P>
+
+  However, a program to create Blorb files has just been written.
+It is at present a Perl script (Perl being an interpreted language
+for messing about with files, popularly used with the Unix operating
+system and ported to numerous others).  This will probably not be
+a permanent solution, but may be of use to interpreter-writers as
+a stopgap, in that it can be used to make test Blorb files.  In its
+present state, the program is called "perlBlorb".
+<P>
+<HR>
+<A name="four"><H4>4. How does perlBlorb work?</H4>
+<P>
+
+  perlBlorb is the interpreter for a very simple programming language
+called "blurb".  It reads in a file of instructions (the "blurb file")
+and follows these instructions to manufacture a Blorb file, gathering
+together the scattered image and sound files needed.
+<P>
+
+  Along the way, it prints out a list of Inform constant definitions
+which may be useful to a game designer working on the story file which
+goes with the resources in question.  In particular, this means that
+the designer doesn't need to work out how to number the pictures and
+sounds: perlBlorb does that automatically.
+<P>
+
+  So the process looks like this:
+<P>
+<PRE>
+      one blurb file
+      picture files in PNG format   --->   one Blorb file
+      sound files                          some Inform definitions
+      an (optional) story file
+</PRE>
+<HR>
+<A name="five"><H4>5. Show me an example.</H4>
+<P>
+<PRE>
+   !  Example "blurb" file
+   
+   copyright "Angela M. Horns 1998"
+   release 17
+
+   palette 16 bit
+
+   resolution 600x400
+
+   storyfile "games/sherbet.z5"
+
+   sound    creak  "sounds/creaking.snd"
+   sound    wind   "sounds/wind.snd"
+
+   picture  flag     "flag.png"      scale 3/1
+   picture  pattern  "backdrop.png"
+</PRE>
+When run through perlBlorb, this produces the following output:
+<PRE>
+! perlBlorb 1.0 [executing on 980124 at 15:31.33]
+! The blorb spell (safely protect a small object as though in a strong box).
+Constant SOUND_creak = 3;
+Constant SOUND_wind = 4;
+Constant PICTURE_flag = 1;
+Constant PICTURE_pattern = 2;
+! Completed: size 45684 bytes (2 pictures, 2 sounds)
+</PRE>
+Note that this text can be run directly through Inform.  If so, a game
+designer can then simply use assembly language like so:
+<PRE>
+   @sound_effect SOUND_creak 2 128 255;
+</PRE>
+("start playing this effect at about half maximum volume, repeating
+it indefinitely").  An alternative would be to use a convenient class
+library, such as "V6Lib" by Jason Penney, to avoid messing about with
+assembly language.
+<P>
+<HR>
+<A name="six"><H4>6. What if I want to
+give my pictures and sounds my own numbers?</H4>
+<P>
+  You're free to specify the numbering yourself, and you need not
+give names for the pictures and sounds.  So a blurb command like:
+<PRE>
+   picture "backdrop.png"
+</PRE>
+gives this image the next picture number (that is, the number which
+is one more than the previous picture's number, or 1 if it's the
+first picture in the file).  A blurb command like so:
+<PRE>
+   picture 100 "backdrop.png"
+</PRE>
+gives it picture number 100.
+
+  The only restriction is that pictures must be given in increasing
+numerical order.  (perlBlorb makes this restriction to help prevent
+accidental duplication of numbers -- it isn't a restriction in the
+"blorb" format itself.)  Similarly with the numbering of sounds.
+<HR>
+
+<A name="seven"><H4>7. What's the full
+specification for the "blurb" language?</H4>
+
+  With one exception (see 'palette' below) each command occupies
+one and only one line of text.  Lines are permitted to be empty or
+to contain only white space.  Lines whose first non-white-space
+character is an exclamation mark are treated as comments, that is,
+ignored.  ("White space" means spaces and tab characters.)
+<TABLE>
+<TR>
+<TD>[string]<TD>means any text within double-quotes (not containing
+              either double-quote or new-line characters)
+<TR>
+<TD>[number]<TD>a decimal number in the range 0 to 32767
+<TR>
+<TD>[id]<TD>either nothing at all, or a [number], or a sequence
+              of up to 20 alphanumeric characters or underscores
+<TR>
+<TD>[dim]<TD>screen dimensions: must take the form
+              [number]x[number]
+<TR>
+<TD>[ratio]<TD>a fraction in the form [number]/[number]
+              (0/0 is legal but otherwise numbers must be positive)
+<TR>
+<TD>[colour]<TD>a colour expressed as six hexadecimal digits, as in
+              some of Netscape's HTML tags: for instance F5DEB3
+              is the colour of wheat, with red value F5 (on a
+              scale 00, none, to FF, full), green value DE and
+              blue value B3.  Hexadecimal digits may be given in
+              either upper or lower case.
+</TABLE>
+With the exception of 'picture' and 'sound', each type of command
+can only occur at most once in any blurb file.  Commands can be used
+in any order or not at all: an empty "blurb" file results in a
+perfectly legal, if useless, Blorb file.
+<BR>
+
+<BR><B>copyright [string]</B><BR>
+Adds this copyright declaration to the file.  It would normally
+consist of the author's name and the date.
+<P>
+<BR><B>release [number]</B><BR>
+Gives this release number to the file.  (This is the number
+returned by the opcode "@picture_data 0" within any game using
+the Blorb file, and might be used when printing out version
+information.)
+<P>
+<BR><B>palette 16 bit<BR>
+palette 32 bit<BR>
+palette { [colour-1] ... [colour-N] }</B><BR>
+Blorb allows designers to signal to the interpreter that a
+particular colour-scheme is in use.  The first two options simply
+suggest that the pictures are best displayed using (at least)
+16-bit, or 32-bit, colours -- no special palette is in use.
+The third option specifies colours used in the pictures
+in terms of red/green/blue levels, and the braces allow the
+sequence of colours to continue over many lines.  At least
+one and at most 256 colours may be defined in this way.  This is
+only a "clue" to the interpreter -- see the Blorb specification
+for details.
+<P>
+<BR><B>resolution [dim]<BR>
+resolution [dim] min [dim]<BR>
+resolution [dim] max [dim]<BR>
+resolution [dim] min [dim] max [dim]</B><BR>
+Allows the designer to to signal a preferred screen size, in real
+pixels, in case the interpreter should have any choice over this.
+The minimum and maximum values are the extreme values at which
+the designer thinks the game will be playable: they're optional,
+the default values being 0x0 and infinity by infinity.
+<P>
+<BR><B>storyfile [string]<BR>
+storyfile [string] include</B><BR>
+Tells perlBlorb the filename of the Z-code story file which these
+resources are being provided for.  (There is no need to do this
+if you prefer not to.)
+Usually the Blorb file simply contains a note of the release number,
+serial code and checksum of the story file, which an interpreter
+can try to match at run-time to see if the Blorb file and story
+file go together.  If the "include" option is used, however, the
+entire story file is embedded within the Blorb file, so that game
+and resources are all bound up in one single file.
+<P>
+<BR><B>sound [id] [string]<BR>
+sound [id] [string] repeat [number]<BR>
+sound [id] [string] repeat forever<BR>
+sound [id] [string] music<BR>
+sound [id] [string] song</B><BR>
+Tells perlBlorb to take a sound sample from the named file and
+make it the sound effect with the given number.  The file should
+be an AIFF file unless "music" is specified, in which case it
+should be a MOD file (roughly speaking a SoundTracker file); or
+unless "song" is specified, in which case it should be a song
+file (roughly, a SoundTracker file using other Blorb sound effects
+as note samples).
+<P>Note that repeat information (the number of repeats to be played)
+is meaningful only in Blorb files to accompany version 3 games.
+In all modern games, repetition is under the control of the game
+file directly, so that this feature of Blorb is provided only to
+make it possible to enBlorb the sound effects for Infocom's V3
+game "The Lurking Horror".
+<P>
+<BR><B>picture [id] [string]<BR>
+picture [id] [string] scale [ratio]<BR>
+picture [id] [string] scale min [ratio]<BR>
+picture [id] [string] scale [ratio] min [ratio]<BR>
+...etc.</B><BR>
+Similarly for pictures: the named file must be a PNG-format image.
+Optionally, the designer can specify a scale factor at which the
+interpreter will display the image -- or, alternatively, a range
+of acceptable scale factors, from which the interpreter may choose
+its own scale factor.  (The default situation is that an image is
+not scaleable and an interpreter must display it pixel-for-pixel.)
+<P>
+There are three optional scale factors given: the preferred
+scale factor, the minimum and the maximum allowed.  The minimum
+and maximum each default to the preferred value if not given.
+The default preferred scale factor is 1.
+<P>
+Scale factors are expressed as fractions: so for instance,
+<PRE>
+      picture "flag/png" scale 3/1
+</PRE>      
+means "always display triple size", whereas
+<PRE>
+      picture "backdrop/png" scale min 1/10 max 8/1
+</PRE>      
+means "you can display this anywhere between 1/10th normal size
+and eight times normal size, but if possible it ought to be
+just its normal size".
+<HR>
+
+<A name="eight"><H4>8. Download perlBlorb.</H4>
+
+You can download perlBlorb 1.03 from this very sentence:
+<A href="perlBlorb.pl">from here</a>, to be exact.
+<P>
+Note that:
+<P>
+1. This is a Perl 5 script, though it uses few advanced features
+of the language and probably works in Perl 4 equally well.
+<P>
+2. It has three filenames wired into it, but all occur in obvious
+scalar declarations in the first few lines.  These need to be
+changed to something sensible for the host machine.  The temporary
+directory can be anywhere where files can harmlessly be created.
+(Note that perlBlorb doesn't bother to delete these temporary
+files at the end of its run.)
+<P>
+3. It's very rudimentary and, in particular, fails to check for
+several error conditions (say, including two contradictory palette
+definitions).  Caveat downloador.
+<P>
+You can also download scanBlorb, a rudimentary Perl script for
+parsing and reporting on the contents of a Blorb file,
+<A href="scanBlorb.pl">from here</a>.
+
+<HR>
+
+<A name="nine"><H4>9. Download an example game.</H4>
+
+You can get one example from here: <I>THE BLORB FILE: or, The
+Spy Who Came In From The Garden</I>, an audio-enhanced vignette
+of espionage and disguise set in the heart of the Cotswold
+countryside.  (I believe this is the first Z-machine game to
+use sound effects written since 1988.)
+<P>
+This very short Version 5 game uses sound effects (AIFF only:
+no music or song samples) but not graphics, and was written as
+an easy test case.  It has only a simple Blorb file, which I hope
+will enable interpreter-writers to start work on upgrading to
+Blorb without the distraction of handling graphics and the
+intricacies of Version 6.  The game prints text like:
+<PRE>
+[Sound effect 5 should be heard now.]
+</PRE>
+whenever it executes the <B>sound_effect</B> opcode, so it should
+at least be easy to tell what is supposed to happen.  There are
+five sound effects in the game.
+<P>
+You can download two different versions:
+<P>
+1. <A HREF="../test/spy1.blb">A single Blorb file</A> which has the
+story file included within it.
+<P>
+2. The <A HREF="../test/spy.z5">story file</A> plus a separate
+<A HREF="../test/spy2.blb">Blorb file</A> (which contains a chunk
+identifying itself as belonging to the story file, but doesn't
+include the actual Z-code).
+<P>
+This is all very experimental, so it's quite possible that
+there's some mistake in these Blorb files -- indeed these are
+the third versions already.  Please let me know if you suspect
+further difficulty.
+<HR>
+
+</BODY></HTML>

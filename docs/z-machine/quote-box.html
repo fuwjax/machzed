@@ -1,0 +1,153 @@
+<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>The Z-Machine Quote Box Problem</title>
+</head>
+<body>
+
+<h2>The Z-Machine Quote Box Problem</h2>
+
+<p>
+Glk uses a simple text-window model, which is easily implemented using the text display toolkits of most operating systems. It assumes that a text window is a single block of styled text. A story window is line-wrapped (with line breaks delimiting paragraphs); a status window is a given number of lines.
+</p>
+
+<p>
+This model works well for the Z-machine -- until you run into the Z-machine quote-box trick.
+</p>
+
+<p>
+Quote boxes were first used in <em>Trinity</em>. The technique was then imitated in Inform 5 (later 6) as the <code>box</code> statement. The trick roughly looks like this:
+</p>
+
+<ul>
+<li>(Assume the game normally has a status window height of 1)
+<li>Increase the window height to, say, ten lines
+<li>Print text in lines 3 through 10, centered, reverse-video
+<li>Decrease the window height back to 1
+<li>Await the next line input
+</ul>
+
+<p>
+In Infocom's (V4) interpreter, the effect was to print the reverse-video text overlaid on the top of the story window, below the (single-line) status bar. The text would then scroll away as part of the story window's natural scrolling, over the next few command inputs.
+</p>
+
+<p>
+In a naive Glk implementation -- or <em>any</em> simple implementation using text windows -- this trick fails. The interpreter will display the quote text for a tiny fraction of a second, or (if the display system has built-in buffering) not at all.
+</p>
+
+<p>
+To work around this, our Z-machine interpreter must use a counter-trick. The strategy is to <em>not</em> decrease the window size when the Z-machine requests it. Instead, we leave the window open (ten lines, in the example) while accepting line input. At the <em>following</em> input event, we assume that the player has read the text, and collapse the window back to its "correct" size.
+</p>
+
+<h3>The Algorithm</h3>
+
+<p>
+To do this, we must maintain some extra state variables. Here is the appropriate algorithm, in pseudocode:
+</p>
+
+<pre>
+    var curheight = 0   # What the VM thinks the height is
+    var maxheight = 0   # Height including possible quote box
+    var seenheight = 0  # Last height the user saw
+
+    # Set the window height. Called by the @split_window opcode.
+    # Also called on @erase_window -1 (with an argument of zero).
+    # May also be called by @set_cursor; see notes below.
+    #
+    function split_window(num_of_lines):
+        var oldheight = curheight
+        curheight = num_of_lines
+
+        # We do not decrease the height at this time -- it can only
+        # increase.
+        if (curheight > maxheight)
+            maxheight = curheight
+
+        # However, if the VM thinks it's increasing the height, we must be
+        # careful to clear the "newly created" space.
+        if (curheight > oldheight)
+            blank out all lines from oldheight to the bottom of the window
+    
+        set the true window height to maxheight
+        # (If this adds new lines, they should start out blank)
+
+    # If the status height is too large because of last turn's quote box,
+    # shrink it down now.
+    # This must be called immediately before any input event. (That is,
+    # the beginning of the @read and @read_char opcodes.)
+    #
+    function resolve_status_height():
+        # If the player has seen the entire window, we can shrink it.
+        if (seenheight == maxheight)
+            maxheight = curheight
+    
+        set the true window height to maxheight
+        seenheight = maxheight
+        maxheight = curheight
+</pre>
+
+<h3>Test Cases</h3>
+
+<p>
+It is wise to test one's interpreter with the following games. In all cases, the quote should disappear after one player input. (Whether this is a typed command or a "hit a key to continue" keystroke.)
+</p>
+
+<p>
+<strong>Curses</strong>: Title screens / I / LOOK / HELP / Q
+</p>
+
+<p>
+(The game begins with a quote; the first "inventory" command displays another. The "help" command brings up a traditional Inform menu, which allows you check that you haven't broken that feature.)
+</p>
+
+<p>
+<strong>Anchorhead</strong>: Title screens / HELP / Q
+</p>
+
+<p>
+(The game begins with two Lovecraft quotes.)
+</p>
+
+<p>
+<strong>Trinity</strong>: NE / EXAMINE SUNDIAL / UNSCREW GNOMON / SW
+</p>
+
+<p>
+(Examining the sundial displays a quote.)
+</p>
+
+<h3>Commentary and Notes</h3>
+
+<p>
+The above code is taken from the Glk interface layer in the <a href="https://github.com/erkyrath/fizmo">Fizmo</a> interpreter. See <a href="https://github.com/erkyrath/fizmo/blob/master/libglkif/src/glk_interface/glk_screen_if.c">glk_screen_if.c</a>.
+</p>
+
+<p>
+I have roughly equivalent code in my <a href="https://github.com/erkyrath/parchment/tree/zarfsite">fork of Parchment</a> ("zarfsite" branch; see <a href="https://github.com/erkyrath/parchment/blob/zarfsite/src/structio/textgrid.js">textgrid.js</a>). It differs in one way: the <code>resolve_status_height</code> functionality appears at the end of the <code>TextGrid.stream</code> method, which is called by the interpreter before input <em>only</em> if the status window was updated.
+</p>
+
+<p>
+This is an insignificant change for Inform games, which update the status window every turn. However, <em>Trinity</em> is tidy and only updates the status window when necessary -- typically when you change locations. Therefore, when running <em>Trinity</em> in my Parchment interpreter, the sundial quote box sticks around until you leave the Wabe.
+</p>
+
+<p>
+Both Fizmo and Parchment are careful about writing beyond the current window size. (That is, invoking <code>@set_cursor</code> to move the cursor below the status window height.) In this case, they increase the window size (call <code>split_window</code>, passing the cursor's line coordinate). I suspect this hack is necessary to support existing Z-code games. However, I can't name specific games that require it.
+</p>
+
+<p>
+Inform 6 supports the <code>box</code> statement when compiling to Glulx, but it does not use anything like the Z-machine's trick. Instead, it opens a third text window and keeps it open until the following input. This is all done in VM code, and does not require any interpreter support.
+</p>
+
+<hr>
+Last updated February 16, 2014.
+<p>
+
+<em><a href="index.html">Glk home page</a></em>
+<p>
+
+<em><a href="../home.html">Zarfhome</a></em>
+<em><a href="../sitemap.html#glk">(map)</a></em>
+<em><a href="../cave/glk.html">(down)</a></em>
+
+</body>
+</html>

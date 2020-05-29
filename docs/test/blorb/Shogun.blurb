@@ -1,0 +1,50 @@
+! blurb file for Shogun
+! compiled by Jason C Penney
+
+copyright "Infocom 1988"
+
+release 9
+resolution 320x200
+
+picture 001 "pix001.png" scale min 0/0 max 0/0
+picture 003 "pix003.png" scale min 0/0 max 0/0
+picture 005 "pix005.png" scale min 0/0 max 0/0
+picture 007 "pix007.png" scale min 0/0 max 0/0
+picture 008 "pix008.png" scale min 0/0 max 0/0
+picture 009 "pix009.png" scale min 0/0 max 0/0
+picture 010 "pix010.png" scale min 0/0 max 0/0
+picture 011 "pix011.png" scale min 0/0 max 0/0
+picture 012 "pix012.png" scale min 0/0 max 0/0
+picture 013 "pix013.png" scale min 0/0 max 0/0
+picture 014 "pix014.png" scale min 0/0 max 0/0
+picture 015 "pix015.png" scale min 0/0 max 0/0
+picture 016 "pix016.png" scale min 0/0 max 0/0
+picture 017 "pix017.png" scale min 0/0 max 0/0
+picture 018 "pix018.png" scale min 0/0 max 0/0
+picture 019 "pix019.png" scale min 0/0 max 0/0
+picture 020 "pix020.png" scale min 0/0 max 0/0
+picture 022 "pix022.png" scale min 0/0 max 0/0
+picture 023 "pix023.png" scale min 0/0 max 0/0
+picture 024 "pix024.png" scale min 0/0 max 0/0
+picture 025 "pix025.png" scale min 0/0 max 0/0
+picture 026 "pix026.png" scale min 0/0 max 0/0
+picture 027 "pix027.png" scale min 0/0 max 0/0
+picture 028 "pix028.png" scale min 0/0 max 0/0
+picture 029 "pix029.png" scale min 0/0 max 0/0
+picture 030 "pix030.png" scale min 0/0 max 0/0
+picture 031 "pix031.png" scale min 0/0 max 0/0
+picture 032 "pix032.png" scale min 0/0 max 0/0
+picture 033 "pix033.png" scale min 0/0 max 0/0
+picture 036 "pix036.png" scale min 0/0 max 0/0
+picture 037 "pix037.png" scale min 0/0 max 0/0
+picture 038 "pix038.png" scale min 0/0 max 0/0
+picture 039 "pix039.png" scale min 0/0 max 0/0
+picture 040 "pix040.png" scale min 0/0 max 0/0
+picture 041 "pix041.png" scale min 0/0 max 0/0
+picture 042 "pix042.png" scale min 0/0 max 0/0
+picture 043 "pix043.png" scale min 0/0 max 0/0
+picture 044 "pix044.png" scale min 0/0 max 0/0
+picture 050 "pix050.png" scale min 0/0 max 0/0
+picture 059 "pix059.png" scale min 0/0 max 0/0
+picture 061 "pix061.png" scale min 0/0 max 0/0
+picture 062 "pix062.png" scale min 0/0 max 0/0

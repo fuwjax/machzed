@@ -1,0 +1,161 @@
+==============================
+- INFOCOM SOUND FILE FORMATS -
+==============================
+
+Author: Stefan Jokisch (jokisch@ls7.informatik.uni-dortmund.de)
+
+Last updated: 6-FEB-96
+
+
+1) Introduction
+---------------
+
+Infocom sold two games with sound support:
+
+    "The Lurking Horror" release 219/221 (Amiga)
+    "Sherlock" release 26 (Amiga and Macintosh)
+
+Nowadays the sound files are also available from ftp.gmd.de:
+
+    if-archive/infocom/missing-files/lh_sound.zip
+    if-archive/infocom/missing-files/sh_sound.zip
+
+This leads to three slightly different sound formats: Infocom's
+Amiga format, Infocom's Macintosh format and finally the format
+used by the **_sound.zip packages. We will describe each format
+briefly. The last section gives a short overview about programs
+which make use of these formats.
+
+In all formats, 16bit values are stored in the order MSB (most
+significant byte) first - LSB (least significant byte) last.
+
+
+2) Today's sound format (used by the **_sound.zip packages)
+-----------------------------------------------------------
+
+This simple format is actually a somewhat restricted version of
+Infocom's Macintosh format. The name of a sound file is derived
+from the name of its story file: First the story file name is
+truncated to six letters, then two decimal digits for the sound
+effect number are added. Finally, the extension snd is appended
+to this string. (For example, "sherlo03.snd" is sound effect #3
+of the story file "sherlock.dat".)
+
+A sound file consists of a small header followed by sample data:
+
+	+------+------+--------------------------+
+	| pos  | size | contents                 |
+	+======+======+==========================+
+	|   0  |   2  | length of following data | prefix
+	+------+------+--------------------------+
+	|   2  |   1  | repeats to play          | header
+	|   3  |   1  | base note                |
+	|   4  |   2  | sample frequency         |
+	|   6  |   2  | *** unused ***           |
+	|   8  |   2  | sample data length       |
+	+------+------+--------------------------+
+	|  10  |   ?  | 8-bit unsigned mono data | sample data
+	+------+------+--------------------------+
+
+The "length of following data" is simply the file size - 2. The
+"repeats to play" is either 0 for infinite repetition or 1. (In
+Z-code 5, this value is ignored altogether.) "base note" is not
+really important. For instance, if the sample data is the sound
+of a instrument playing the note c then "base note" should hold
+an appropriate MIDI value (Infocom usually chose $32 or $3c for
+their own sound files). The "sample frequency" and "sample data
+length" hold all vital information for playing the sound.
+
+
+3) Infocom's Macintosh format
+-----------------------------
+
+This format is almost identical to the format described above.
+The name of a sound file, however, does no longer depend on the
+story file name: The sound effect number is just prefixed with
+the letter "s"; eg "s3" is sound effect no #3 regardless of the
+story file name. (It is expected that sound files for different
+games are stored in different directories.) The contents of the
+sound file use exactly the scheme which is described above.
+
+In some cases, however, the same sound file is used for several
+different sound effect numbers. This is achieved by using MID
+files instead of sound files. The name of the MID file is built
+by prefixing the sound effect number with the letter "m". The
+contents of the MID file use the following scheme:
+
+	+------+------+--------------------------+
+	| pos  | size | contents                 |
+	+======+======+==========================+
+	|   0  |   2  | length of sequence of c. | prefix
+	+------+------+--------------------------+
+	|   2  |   ?  | sequence of commands     | body
+	+------+------+--------------------------+
+	|      |   ?  | name of sound file       | appendix
+	+------+------+--------------------------+
+
+Not much is known about the "sequence of commands". Presumably,
+this is a sequence of MIDI-style commands. Only the third byte
+in the sequence is important since this is the note to play. It
+affects the frequency at which the sound given by the "name of
+sound file" must be played. The formula to calculate the proper
+frequency is:
+
+ pow (2, ("note" - "base note") / 12) * "sample frequency" / 4
+
+In practice, not many MID files were used: Sherlock uses a few
+MID files to produce slow, normal and fast heart beats from the
+same sound file.
+
+
+4) Infocom's Amiga sound format
+-------------------------------
+
+This is the most complicated of the three sound file formats.
+It introduces a new file type which we shall call NAM file. The
+file name of the NAM file starts with the letter "s" followed
+by the sound effect number. Finally, the extension nam is added
+to the string. For instance, "s3.nam" is the NAM file for sound
+effect #3. (Once again, sound files for different games should
+be stored in different directories.) Its contents are as shown:
+
+	+------+------+--------------------------+
+	| pos  | size | contents                 |
+	+======+======+==========================+
+	|   0  |   2  | (always $0100)           | prefix (?)
+	+------+------+--------------------------+
+	|   2  |   ?  | name of sound file       | body
+	|      |   2  | (always $0000)           |
+	|      |   ?  | name of MID file         |
+	|      |   2  | (always $0000)           |
+	+------+------+--------------------------+
+
+The sound files use roughly the same scheme as Macintosh sound
+files with one exception: The sample data is signed instead of
+unsigned. Furthermore, Amiga MID files look like Macintosh MID
+files except that the sound file name at the end of the file is
+missing (since it is given by the NAM file).
+
+
+5) Sound supporting programs
+----------------------------
+
+Sound conversion utilities:
+
+    "SoundConv" for Archimedes (Infocom module available at ftp.gmd.de)
+    "SOX" for Amiga, MS-DOS, Unix etc. (beta available at ftp.gmd.de)
+
+Publically available Z-code interpreters:
+
+    "Frotz" for Amiga
+    "Frotz" for MS-DOS
+    "ITF" for Amiga
+    "Zip2000" for Archimedes
+
+Original Infocom interpreters:
+
+    V3 interpreter C for Amiga
+    V4 interpreter B for Amiga
+    V5 interpreter B for Amiga
+    V5 interpreter C for Macintosh
+

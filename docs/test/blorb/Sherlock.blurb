@@ -1,0 +1,23 @@
+! blurb file for Sherlock: The Riddle of the Crown Jewels
+! compiled by Jason C Penney
+
+copyright "Infocom 1987"
+
+! point storyfile to release 26
+storyfile "C:\infocom\data\sherlock.dat"
+
+sound 03 "SHERLO03.aiff"
+sound 04 "SHERLO04.aiff"
+sound 05 "SHERLO05.aiff"
+sound 06 "SHERLO06.aiff"
+sound 07 "SHERLO07.aiff"
+sound 08 "SHERLO08.aiff"
+sound 09 "SHERLO09.aiff"
+sound 10 "SHERLO10.aiff"
+sound 11 "SHERLO11.aiff"
+sound 12 "SHERLO12.aiff"
+sound 13 "SHERLO13.aiff"
+sound 14 "SHERLO14.aiff"
+sound 15 "SHERLO15.aiff"
+sound 16 "SHERLO16.aiff"
+sound 17 "SHERLO17.aiff"

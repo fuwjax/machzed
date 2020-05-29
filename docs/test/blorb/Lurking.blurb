@@ -1,0 +1,23 @@
+! blurb file for The Lurking Horror
+! compiled by Jason C Penney
+! Thanks to Gene Jones for getting sound #17 to convert
+
+copyright "Infocom 1987"
+
+! point storyfile to release 221
+storyfile "C:\infocom\data\lurking.dat"
+
+sound 03 "Lurkin03.aiff"
+sound 04 "Lurkin04.aiff"
+sound 06 "Lurkin06.aiff"
+sound 07 "Lurkin07.aiff"
+sound 08 "Lurkin08.aiff"
+sound 09 "Lurkin09.aiff"
+sound 10 "Lurkin10.aiff"
+sound 11 "Lurkin11.aiff"
+sound 12 "Lurkin12.aiff"
+sound 13 "Lurkin13.aiff"
+sound 15 "Lurkin15.aiff"
+sound 16 "Lurkin16.aiff"
+sound 17 "Lurkin17.aiff"
+sound 18 "Lurkin18.aiff"
