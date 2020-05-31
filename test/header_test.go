@@ -8,7 +8,7 @@ import (
 )
 
 func TestFirst(t *testing.T) {
-	header := z.Header{}
+	header := z.StoryFileHeader{}
 	file, err := os.Open("data/czech.z5")
 	if err != nil {
 		t.Errorf("could not open file")
