@@ -9,17 +9,14 @@ import (
 )
 
 func main() {
-	header := z.StoryFileHeader{}
 	file, err := os.Open("docs/test/czech_0_8/czech.z5")
 	if err != nil {
-		panic("could not open file")
+		panic(fmt.Sprintf("could not open file: %v", err))
 	}
-	extHeader, err := header.Read(file)
+	story, err := z.ReadStory(file)
 	if err != nil {
-		panic("could not process header")
+		panic(fmt.Sprintf("could not process header: %v", err))
 	}
-	headerObj, _ := json.Marshal(header)
-	fmt.Println(string(headerObj))
-	extHeaderObj, _ := json.Marshal(extHeader)
-	fmt.Println(string(extHeaderObj))
+	obj, _ := json.Marshal(story.Dump())
+	fmt.Println(string(obj))
 }

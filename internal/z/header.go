@@ -1,86 +1,7 @@
 package z
 
-import (
-	"encoding/binary"
-	"fmt"
-)
-
-func safe(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-//StoryFile represents the story data as an extended Reader and ReaderAt. An io.File is a StoryFile
-type StoryFile interface {
-	Read(p []byte) (n int, err error)
-	Seek(offset int64, whence int) (ret int64, err error)
-	ReadAt(b []byte, off int64) (n int, err error)
-}
-
-type Frame struct {
-	story StoryFile
-	start int64
-	end   int64
-}
-
-func frame(story StoryFile, pos uint16) (frame Frame, err error) {
-	_, err = story.Seek(int64(pos), 0)
-	if err != nil {
-		return
-	}
-	buffer := make([]byte, 2)
-	n, err := story.Read(buffer)
-	if n != 2 {
-		err = fmt.Errorf("expected 2 bytes, received %d", n)
-	} else if err == nil {
-		start := int64(pos + 2)
-		length := int64(buffer[0])*256 + int64(buffer[1])
-		frame = Frame{story, start, start + length}
-	}
-	return
-}
-
-// Read implements StoryFile.Read
-func (frame Frame) Read(p []byte) (n int, err error) {
-	storyOffset, err := frame.story.Seek(0, 1)
-	if storyOffset < frame.start || storyOffset >= frame.end {
-		err = fmt.Errorf("Read offset outside of Frame, seek first")
-	} else {
-		remaining := frame.end - storyOffset
-		originalLength := len(p)
-		if int64(originalLength) > remaining {
-			p = p[:remaining]
-		}
-		n, err = frame.story.Read(p)
-		p = p[:originalLength]
-	}
-	return
-}
-
-// Seek implements StoryFile.Seek
-func (frame Frame) Seek(offset int64, whence int) (ret int64, err error) {
-	switch whence {
-	case 0:
-		ret, err = frame.story.Seek(frame.start+offset, 0)
-	case 1:
-		ret, err = frame.story.Seek(offset, 1)
-	case 2:
-		ret, err = frame.story.Seek(frame.end+offset, 2)
-	}
-	return
-}
-
-// ReadAt implements StoryFile.ReadAt
-func (frame Frame) ReadAt(b []byte, off int64) (n int, err error) {
-	_, err = frame.Seek(off, 0)
-	if err == nil {
-		n, err = frame.Read(b)
-	}
-	return
-}
-
 // StoryFileHeader is the Z-Machine file header
+// Documented in section 11 and appendix B
 type StoryFileHeader struct {
 	Version                      byte
 	Flags1                       byte
@@ -113,8 +34,7 @@ type StoryFileHeader struct {
 	RevisionNumber               uint16
 	AlphabetAddress              uint16
 	HeaderExtensionAddress       uint16
-	User                         [8]byte
-	CompilerVersion              [4]byte
+	User                         [8]byte // the last four bytes are the Inform 6 compiler version, if that was the compiler used
 }
 
 // StoryFileExtendedHeader is the Z-Machine extended file header from version 5-8
@@ -126,12 +46,6 @@ type StoryFileExtendedHeader struct {
 	TrueDefaultForegroundColor uint16
 	TrueDefaultBackgroundColor uint16
 }
-
-// type Story struct {
-// 	version Version
-// 	header  *StoryFileHeader
-//   extHeader *StoryFileExtendedHeader
-// }
 
 // GameConfig is the set of header flags that a game may initialize with.
 // it may not be a useful interface, it is included primarily for documentation
@@ -208,18 +122,4 @@ type Capabilities interface {
 	CanMouse() bool
 	// true if interpreter supports transparency, false otherwise
 	CanTransparency() bool
-}
-
-// Read a story file header
-func (h *StoryFileHeader) Read(story StoryFile) (extHeader StoryFileExtendedHeader, err error) {
-	story.Seek(0, 0)
-	err = binary.Read(story, binary.BigEndian, h)
-	if err == nil && h.HeaderExtensionAddress > 0 {
-		frame, err := frame(story, h.HeaderExtensionAddress)
-		if err == nil {
-			extHeader := StoryFileExtendedHeader{}
-			err = binary.Read(frame, binary.BigEndian, extHeader)
-		}
-	}
-	return
 }
